@@ -597,7 +597,7 @@
       --layout-logo-y: var(--mobile-start-logo-y, 111px);
       --layout-logo-scale: var(--mobile-start-logo-scale, 2.06);
       --layout-copy-x: var(--mobile-start-copy-x, 0px);
-      --layout-copy-y: var(--mobile-start-copy-y, -64px);
+      --layout-copy-y: var(--mobile-start-copy-y, -100px);
       --layout-copy-scale: var(--mobile-start-copy-scale, 1.08);
       --launch-logo-scale: 1;
       --launch-logo-translate-x: 0px;
@@ -1599,8 +1599,8 @@
               <span id="mobileStartCopyXText">0px</span>
             </label>
             <label>Y
-              <input id="mobileStartCopyY" type="range" min="-240" max="240" step="1" value="-64" />
-              <span id="mobileStartCopyYText">-64px</span>
+              <input id="mobileStartCopyY" type="range" min="-240" max="240" step="1" value="-100" />
+              <span id="mobileStartCopyYText">-100px</span>
             </label>
             <label>大小
               <input id="mobileStartCopyScale" type="range" min="40" max="220" step="1" value="108" />
@@ -1615,8 +1615,8 @@
               <span id="mobileFinalLogoXText">0px</span>
             </label>
             <label>间距
-              <input id="mobileFinalGap" type="range" min="0" max="160" step="1" value="60" />
-              <span id="mobileFinalGapText">60px</span>
+              <input id="mobileFinalGap" type="range" min="0" max="160" step="1" value="36" />
+              <span id="mobileFinalGapText">36px</span>
             </label>
             <label>大小
               <input id="mobileFinalLogoScale" type="range" min="40" max="220" step="1" value="100" />
@@ -1635,7 +1635,7 @@
               <input id="mobileFinalCopyScale" type="range" min="40" max="220" step="1" value="88" />
               <span id="mobileFinalCopyScaleText">88%</span>
             </label>
-            <span id="mobileFinalGapNote" class="mobile-layout-output">上下共用同一个 60px 间距</span>
+            <span id="mobileFinalGapNote" class="mobile-layout-output">Logo 与文字组均距翻页 36px</span>
             <input id="mobileFinalCopyY" type="hidden" value="16" />
           </section>
         </div>
@@ -2688,10 +2688,10 @@
         mobileStartLogoY: "111",
         mobileStartLogoScale: "206",
         mobileStartCopyX: "0",
-        mobileStartCopyY: "-64",
+        mobileStartCopyY: "-100",
         mobileStartCopyScale: "108",
         mobileFinalLogoX: "0",
-        mobileFinalGap: "60",
+        mobileFinalGap: "36",
         mobileFinalLogoY: "0",
         mobileFinalLogoScale: "100",
         mobileFinalCopyX: "0",
@@ -4876,7 +4876,7 @@
           mobileStartLogoY: "111",
           mobileStartLogoScale: "206",
           mobileStartCopyX: "0",
-          mobileStartCopyY: "-64",
+          mobileStartCopyY: "-100",
           mobileStartCopyScale: "108",
           mobileFinalLogoX: "0",
           mobileFinalLogoY: "0",
