@@ -553,7 +553,7 @@
     }
 
     .scene.preview-mobile .flip-stage-slot {
-      left: 12.11878%;          /* (362 - 274.26) / 2 / 362 */
+      left: 12.11878%;          /* (362 - 274.26) / 2 / 362: keep cards centred */
       top: 28.39286%;           /* 122 + (213.77 - 187.47) / 2 */
       width: 75.76243%;         /* 274.26 / 362 */
       height: 39.38866%;        /* 187.47 / 476 */
@@ -701,6 +701,56 @@
       #mobileLayoutControls input[type="range"] { width: 100%; }
     }
 
+    /*
+      Keep the mobile layout editor attached to the visible artboard even when
+      mobile preview is selected from a wide desktop browser. The right edge is
+      inset from the 390 px artboard edge, rather than the browser edge.
+    */
+    body.mobile-preview-active #mobileLayoutControls {
+      position: fixed;
+      z-index: 80;
+      left: auto;
+      right: max(
+        10px,
+        calc((100vw - min(calc(100vw - 20px), 390px)) / 2 + 10px)
+      );
+      bottom: max(10px, env(safe-area-inset-bottom));
+      width: min(270px, calc(100vw - 30px));
+      max-height: 46svh;
+      overflow: auto;
+      border-color: rgba(255,218,0,.42);
+      background: rgba(8,8,12,.90);
+      box-shadow: 0 12px 40px rgba(0,0,0,.58);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    body.mobile-preview-active #mobileLayoutControls:not([open]) {
+      width: auto;
+      min-width: 154px;
+    }
+
+    body.mobile-preview-active #mobileLayoutControls > summary {
+      position: sticky;
+      z-index: 2;
+      top: 0;
+      background: rgba(8,8,12,.96);
+    }
+
+    body.mobile-preview-active #mobileLayoutControls .control-group {
+      align-items: stretch;
+    }
+
+    body.mobile-preview-active #mobileLayoutControls label {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) 50px;
+    }
+
+    body.mobile-preview-active #mobileLayoutControls input[type="range"] {
+      width: 100%;
+    }
+
 
     /* Full 1440 × 898 Figma navigation / footer composition. */
     .frame-decoration {
@@ -828,10 +878,11 @@
     .left-side-copy {
       position: absolute;
       z-index: 3;
-      left: 5.62%;
+      /* Right edge matches the original one-character “剩” position. */
+      left: calc(5.62% + 2.28479cqw);
       top: 43.25%;
-      transform: translate(-50%, -50%) scale(var(--launch-side-scale, 1));
-      transform-origin: center;
+      transform: translate(-100%, -50%) scale(var(--launch-side-scale, 1));
+      transform-origin: right center;
       opacity: calc(
         var(--intro-overlay-opacity, 1) *
         var(--side-layer-opacity, 1) *
@@ -855,7 +906,8 @@
     }
 
     .scene.preview-mobile .left-side-copy {
-      left: 4.1%;
+      /* Preserve the old “剩” right edge after replacing it with “还有”. */
+      left: calc(4.1% + 2.7cqw);
       top: 48.1%;
       font-size: 5.4cqw;
     }
@@ -964,6 +1016,11 @@
     .hero-content.prelaunch-reset .left-side-copy,
     .hero-content.prelaunch-reset .flip-stage-slot,
     .scene.prelaunch-reset .frame-decoration {
+      transition: none !important;
+    }
+
+    .hero-content.mobile-gap-measuring .figma-decoration .reveal-logo,
+    .hero-content.mobile-gap-measuring .figma-decoration .reveal-copy {
       transition: none !important;
     }
 
@@ -1524,14 +1581,15 @@
               <input id="mobileFinalLogoX" type="range" min="-180" max="180" step="1" value="0" />
               <span id="mobileFinalLogoXText">0px</span>
             </label>
-            <label>Y
-              <input id="mobileFinalLogoY" type="range" min="-200" max="240" step="1" value="0" />
-              <span id="mobileFinalLogoYText">0px</span>
+            <label>间距
+              <input id="mobileFinalGap" type="range" min="0" max="160" step="1" value="60" />
+              <span id="mobileFinalGapText">60px</span>
             </label>
             <label>大小
               <input id="mobileFinalLogoScale" type="range" min="40" max="220" step="1" value="100" />
               <span id="mobileFinalLogoScaleText">100%</span>
             </label>
+            <input id="mobileFinalLogoY" type="hidden" value="0" />
           </section>
 
           <section class="control-group group-mobile-layout">
@@ -1540,14 +1598,12 @@
               <input id="mobileFinalCopyX" type="range" min="-180" max="180" step="1" value="0" />
               <span id="mobileFinalCopyXText">0px</span>
             </label>
-            <label>Y
-              <input id="mobileFinalCopyY" type="range" min="-240" max="240" step="1" value="16" />
-              <span id="mobileFinalCopyYText">16px</span>
-            </label>
             <label>大小
               <input id="mobileFinalCopyScale" type="range" min="40" max="220" step="1" value="88" />
               <span id="mobileFinalCopyScaleText">88%</span>
             </label>
+            <span id="mobileFinalGapNote" class="mobile-layout-output">上下共用同一个 60px 间距</span>
+            <input id="mobileFinalCopyY" type="hidden" value="16" />
           </section>
         </div>
       </details>
@@ -2602,6 +2658,7 @@
         mobileStartCopyY: "-64",
         mobileStartCopyScale: "108",
         mobileFinalLogoX: "0",
+        mobileFinalGap: "60",
         mobileFinalLogoY: "0",
         mobileFinalLogoScale: "100",
         mobileFinalCopyX: "0",
@@ -3317,6 +3374,47 @@
         });
       }
 
+      function applyMobileFinalGap() {
+        if (!scene.classList.contains("preview-mobile")) return;
+        const gapInput = mobileLayoutInputs.mobileFinalGap;
+        const logoYInput = mobileLayoutInputs.mobileFinalLogoY;
+        const copyYInput = mobileLayoutInputs.mobileFinalCopyY;
+        const logo = document.querySelector(".reveal-logo-group");
+        const copy = document.querySelector(".reveal-copy");
+        const flip = document.querySelector(".flip-stage-slot");
+        if (!gapInput || !logoYInput || !copyYInput || !logo || !copy || !flip) return;
+
+        const gap = Math.max(0, Number(gapInput.value) || 0);
+        heroContent.classList.add("mobile-gap-measuring");
+        logoYInput.value = "0";
+        copyYInput.value = "0";
+        applyMobileLayoutControls();
+
+        /* Iterate because CSS transform order can slightly scale translations. */
+        for (let i = 0; i < 3; i += 1) {
+          const logoRect = logo.getBoundingClientRect();
+          const copyRect = copy.getBoundingClientRect();
+          const flipRect = flip.getBoundingClientRect();
+          const topGap = flipRect.top - logoRect.bottom;
+          const bottomGap = copyRect.top - flipRect.bottom;
+          logoYInput.value = String(
+            Math.round((Number(logoYInput.value) + topGap - gap) * 100) / 100
+          );
+          copyYInput.value = String(
+            Math.round((Number(copyYInput.value) + gap - bottomGap) * 100) / 100
+          );
+          applyMobileLayoutControls();
+        }
+
+        const note = document.querySelector("#mobileFinalGapNote");
+        if (note) note.textContent = `Logo 与文字组均距翻页 ${gap}px`;
+        requestAnimationFrame(() => {
+          heroContent.classList.remove("mobile-gap-measuring");
+        });
+      }
+
+      window.applyMobileFinalGap = applyMobileFinalGap;
+
       function applyMobileLayoutSettings(settings = mobileLayoutDefaults) {
         Object.entries(mobileLayoutInputs).forEach(([id, input]) => {
           input.value = String(settings[id] ?? mobileLayoutDefaults[id]);
@@ -3913,12 +4011,22 @@
         input.addEventListener("change", updateControlTexts);
       });
 
-      Object.values(mobileLayoutInputs).forEach(input => {
+      Object.entries(mobileLayoutInputs).forEach(([id, input]) => {
         input.addEventListener("input", () => {
           if (!scene.classList.contains("preview-mobile")) {
             document.querySelector("#previewMobile")?.click();
           }
-          applyMobileLayoutControls();
+          const controlsFinalGap =
+            id === "mobileFinalGap" ||
+            id === "mobileFinalLogoScale" ||
+            id === "mobileFinalCopyScale";
+          if (controlsFinalGap) {
+            setMobileLayoutPreviewState("final");
+            applyMobileLayoutControls();
+            applyMobileFinalGap();
+          } else {
+            applyMobileLayoutControls();
+          }
         });
       });
 
@@ -3931,6 +4039,7 @@
       resetMobileLayoutValuesButton.addEventListener("click", () => {
         applyMobileLayoutSettings(mobileLayoutDefaults);
         setMobileLayoutPreviewState("final");
+        applyMobileFinalGap();
         mobileLayoutOutput.textContent = "已恢复手机版默认参数。";
       });
       copyMobileLayoutValuesButton.addEventListener("click", async () => {
@@ -4589,14 +4698,90 @@
       const mobileButton = document.querySelector("#previewMobile");
       const sizeLabel = document.querySelector("#previewSize");
       const mobileArtwork = document.querySelector(".figma-decoration");
+      const mobileControls = document.querySelector("#mobileLayoutControls");
+      const mobileControlsHome = mobileControls?.parentElement;
+      const mobileControlsNext = mobileControls?.nextSibling;
+      const heroContent = document.querySelector(".hero-content");
+      const mobileFinalGap = document.querySelector("#mobileFinalGap");
+      const mobileFinalLogoY = document.querySelector("#mobileFinalLogoY");
+      const mobileFinalCopyY = document.querySelector("#mobileFinalCopyY");
+      const mobileFinalLogoScale = document.querySelector("#mobileFinalLogoScale");
+      const mobileFinalCopyScale = document.querySelector("#mobileFinalCopyScale");
       if (!scene || !desktopButton || !mobileButton || !sizeLabel) return;
 
       let userSelected = false;
+
+      function keepFinalGroupsEquidistant() {
+        if (!scene.classList.contains("preview-mobile") || !heroContent) return;
+        const logo = document.querySelector(".reveal-logo-group");
+        const copy = document.querySelector(".reveal-copy");
+        const flip = document.querySelector(".flip-stage-slot");
+        if (!logo || !copy || !flip || !mobileFinalGap ||
+            !mobileFinalLogoY || !mobileFinalCopyY) return;
+
+        const gap = Math.max(0, Number(mobileFinalGap.value) || 0);
+        heroContent.classList.remove("mobile-layout-start-preview");
+        heroContent.classList.add("mobile-gap-measuring");
+        heroContent.style.setProperty(
+          "--mobile-final-logo-scale",
+          String((Number(mobileFinalLogoScale?.value) || 100) / 100)
+        );
+        heroContent.style.setProperty(
+          "--mobile-final-copy-scale",
+          String((Number(mobileFinalCopyScale?.value) || 88) / 100)
+        );
+        mobileFinalLogoY.value = "0";
+        mobileFinalCopyY.value = "0";
+
+        const applyY = () => {
+          heroContent.style.setProperty(
+            "--mobile-final-logo-y",
+            (Number(mobileFinalLogoY.value) || 0) + "px"
+          );
+          heroContent.style.setProperty(
+            "--mobile-final-copy-y",
+            (Number(mobileFinalCopyY.value) || 0) + "px"
+          );
+        };
+        applyY();
+
+        for (let i = 0; i < 4; i += 1) {
+          const logoRect = logo.getBoundingClientRect();
+          const copyRect = copy.getBoundingClientRect();
+          const flipRect = flip.getBoundingClientRect();
+          mobileFinalLogoY.value = String(
+            Math.round(((Number(mobileFinalLogoY.value) || 0) +
+              flipRect.top - logoRect.bottom - gap) * 100) / 100
+          );
+          mobileFinalCopyY.value = String(
+            Math.round(((Number(mobileFinalCopyY.value) || 0) +
+              gap - (copyRect.top - flipRect.bottom)) * 100) / 100
+          );
+          applyY();
+        }
+
+        const note = document.querySelector("#mobileFinalGapNote");
+        if (note) note.textContent = `Logo 与文字组均距翻页 ${gap}px`;
+        requestAnimationFrame(() => {
+          heroContent.classList.remove("mobile-gap-measuring");
+        });
+      }
 
       function setPreviewMode(mode, fromUser = false) {
         const mobile = mode === "mobile";
         if (fromUser) userSelected = true;
         scene.classList.toggle("preview-mobile", mobile);
+        document.body.classList.toggle("mobile-preview-active", mobile);
+        /*
+          .controls uses backdrop-filter, which makes fixed descendants behave
+          like absolute elements. Move this one editor to <body> in mobile
+          preview so it genuinely stays in the visible artboard corner.
+        */
+        if (mobile && mobileControls) {
+          document.body.append(mobileControls);
+        } else if (mobileControls && mobileControlsHome) {
+          mobileControlsHome.insertBefore(mobileControls, mobileControlsNext);
+        }
         scene.dataset.preview = mobile ? "mobile" : "desktop";
         desktopButton.classList.toggle("is-active", !mobile);
         mobileButton.classList.toggle("is-active", mobile);
@@ -4609,11 +4794,28 @@
         );
 
         /* Let both WebGL render loops observe the new CSS box immediately. */
-        requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new Event("resize"));
+          if (mobile) keepFinalGroupsEquidistant();
+        });
       }
 
       desktopButton.addEventListener("click", () => setPreviewMode("desktop", true));
       mobileButton.addEventListener("click", () => setPreviewMode("mobile", true));
+      [mobileFinalGap, mobileFinalLogoScale, mobileFinalCopyScale]
+        .filter(Boolean)
+        .forEach(input => {
+          input.addEventListener("input", () => {
+            if (!scene.classList.contains("preview-mobile")) {
+              setPreviewMode("mobile", true);
+            }
+            keepFinalGroupsEquidistant();
+          });
+        });
+      document.querySelector("#previewMobileFinalState")?.addEventListener(
+        "click",
+        () => requestAnimationFrame(keepFinalGroupsEquidistant)
+      );
 
       /* On an actual narrow device, open directly in the mobile artboard. */
       const narrowViewport = matchMedia("(max-width: 560px)");
