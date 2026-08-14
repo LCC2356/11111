@@ -924,8 +924,8 @@
     }
 
     .scene.preview-mobile .left-side-copy {
-      /* Preserve the old “剩” right edge after replacing it with “还有”. */
-      left: calc(4.1% + 2.7cqw);
+      /* Match the right label's card gap while keeping the flip group centred. */
+      left: 9.84%;
       top: 48.1%;
       font-size: 20px;
       line-height: 20px;
@@ -941,6 +941,16 @@
       top: 48.1%;
       font-size: 20px;
       line-height: 20px;
+    }
+
+    .scene.preview-mobile .left-side-copy,
+    .scene.preview-mobile .right-side-copy {
+      background: none;
+      -webkit-background-clip: border-box;
+      background-clip: border-box;
+      -webkit-text-fill-color: #fff;
+      color: #fff;
+      text-shadow: none;
     }
 
     .figma-decoration .reveal-copy {
