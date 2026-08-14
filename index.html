@@ -593,12 +593,18 @@
     */
     .scene.preview-mobile .hero-content.prelaunch-active:not(.prelaunch-settle),
     .scene.preview-mobile .hero-content.mobile-layout-start-preview {
-      --launch-logo-scale: var(--mobile-start-logo-scale, 2.06);
-      --launch-logo-translate-x: var(--mobile-start-logo-x, 0px);
-      --launch-logo-translate-y: var(--mobile-start-logo-y, 111px);
-      --launch-copy-scale: var(--mobile-start-copy-scale, 1.08);
-      --launch-copy-translate-x: var(--mobile-start-copy-x, 0px);
-      --launch-copy-translate-y: var(--mobile-start-copy-y, -64px);
+      --layout-logo-x: var(--mobile-start-logo-x, 0px);
+      --layout-logo-y: var(--mobile-start-logo-y, 111px);
+      --layout-logo-scale: var(--mobile-start-logo-scale, 2.06);
+      --layout-copy-x: var(--mobile-start-copy-x, 0px);
+      --layout-copy-y: var(--mobile-start-copy-y, -64px);
+      --layout-copy-scale: var(--mobile-start-copy-scale, 1.08);
+      --launch-logo-scale: 1;
+      --launch-logo-translate-x: 0px;
+      --launch-logo-translate-y: 0px;
+      --launch-copy-scale: 1;
+      --launch-copy-translate-x: 0px;
+      --launch-copy-translate-y: 0px;
       --launch-stage-translate-y: 7px;
     }
 
@@ -654,6 +660,40 @@
       .background-day,
       .background-night { grid-column: 1 / -1; }
       .advanced-body { grid-template-columns: 1fr; }
+
+      #mobileLayoutControls {
+        position: fixed;
+        z-index: 80;
+        left: 8px;
+        right: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        width: auto;
+        max-height: 48svh;
+        overflow: auto;
+        border-color: rgba(255,218,0,.38);
+        background: rgba(8,8,12,.96);
+        box-shadow: 0 12px 40px rgba(0,0,0,.58);
+        backdrop-filter: blur(20px);
+      }
+
+      #mobileLayoutControls > summary {
+        position: sticky;
+        z-index: 2;
+        top: 0;
+        background: rgba(8,8,12,.98);
+      }
+
+      #mobileLayoutControls .control-group {
+        align-items: stretch;
+      }
+
+      #mobileLayoutControls label {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr) 50px;
+      }
+
+      #mobileLayoutControls input[type="range"] { width: 100%; }
     }
 
 
@@ -778,6 +818,43 @@
       );
     }
 
+    .figma-decoration .reveal-side-left { display: none; }
+
+    .left-side-copy {
+      position: absolute;
+      z-index: 3;
+      left: 5.62%;
+      top: 43.25%;
+      transform: translate(-50%, -50%) scale(var(--launch-side-scale, 1));
+      transform-origin: center;
+      opacity: calc(
+        var(--intro-overlay-opacity, 1) *
+        var(--side-layer-opacity, 1) *
+        var(--launch-side-opacity, 1)
+      );
+      font-family: "FZZhengHeiS-EB-GB", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 4.56958cqw;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      background: linear-gradient(97.41deg, #fff -2.85%, #fff 23.91%, #cbfff5 30.87%, #ffe3f7 36.83%, #fff 45.86%, #fff 77.97%, #e9ffe3 83.7%, #fff2c5 86.53%, #fff 96.7%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      text-shadow: .27624cqw .27624cqw .55249cqw rgba(0,0,0,.25);
+      transition:
+        transform var(--launch-motion-duration, 760ms) cubic-bezier(.22, 1, .36, 1),
+        opacity var(--launch-motion-duration, 760ms) cubic-bezier(.22, 1, .36, 1);
+      pointer-events: none;
+    }
+
+    .scene.preview-mobile .left-side-copy {
+      left: 4.1%;
+      top: 48.1%;
+      font-size: 5.4cqw;
+    }
+
     .figma-decoration .reveal-copy {
       opacity: calc(
         var(--intro-overlay-opacity, 1) *
@@ -879,6 +956,7 @@
     .hero-content.prelaunch-reset .figma-decoration .reveal-logo,
     .hero-content.prelaunch-reset .figma-decoration .reveal-copy,
     .hero-content.prelaunch-reset .figma-decoration .reveal-side,
+    .hero-content.prelaunch-reset .left-side-copy,
     .hero-content.prelaunch-reset .flip-stage-slot,
     .scene.prelaunch-reset .frame-decoration {
       transition: none !important;
@@ -979,6 +1057,8 @@
             <canvas id="gl"></canvas>
           </div>
         </div>
+
+        <span class="left-side-copy" aria-label="还有">还有</span>
 
         <svg class="figma-decoration" role="img" aria-label="30周年倒计时与发售信息" xmlns="http://www.w3.org/2000/svg" width="569" height="594" viewBox="0 0 569 594" fill="none">
         <g class="reveal-logo reveal-logo-group">
@@ -1328,7 +1408,7 @@
         <label class="switch-label" title="开启后，翻页期间隐藏上方 Logo，到达目标数字后淡入">Logo
           <input id="revealLogoAtTarget" type="checkbox" />
         </label>
-        <label class="switch-label" title="开启后，翻页期间隐藏左右“剩 / 天”，到达目标数字后淡入">剩 / 天
+        <label class="switch-label" title="开启后，翻页期间隐藏左右“还有 / 天”，到达目标数字后淡入">还有 / 天
           <input id="revealSideAtTarget" type="checkbox" />
         </label>
         <label class="switch-label" title="开启后，翻页期间隐藏下方发售信息，到达目标数字后淡入">下方文字组
@@ -1456,12 +1536,12 @@
               <span id="mobileFinalCopyXText">0px</span>
             </label>
             <label>Y
-              <input id="mobileFinalCopyY" type="range" min="-240" max="240" step="1" value="0" />
-              <span id="mobileFinalCopyYText">0px</span>
+              <input id="mobileFinalCopyY" type="range" min="-240" max="240" step="1" value="16" />
+              <span id="mobileFinalCopyYText">16px</span>
             </label>
             <label>大小
-              <input id="mobileFinalCopyScale" type="range" min="40" max="220" step="1" value="100" />
-              <span id="mobileFinalCopyScaleText">100%</span>
+              <input id="mobileFinalCopyScale" type="range" min="40" max="220" step="1" value="88" />
+              <span id="mobileFinalCopyScaleText">88%</span>
             </label>
           </section>
         </div>
@@ -2520,8 +2600,8 @@
         mobileFinalLogoY: "0",
         mobileFinalLogoScale: "100",
         mobileFinalCopyX: "0",
-        mobileFinalCopyY: "0",
-        mobileFinalCopyScale: "100"
+        mobileFinalCopyY: "16",
+        mobileFinalCopyScale: "88"
       };
       const mobileLayoutInputs = Object.fromEntries(
         Object.keys(mobileLayoutDefaults).map(id => [
@@ -4562,8 +4642,8 @@
           mobileFinalLogoY: "0",
           mobileFinalLogoScale: "100",
           mobileFinalCopyX: "0",
-          mobileFinalCopyY: "0",
-          mobileFinalCopyScale: "100"
+          mobileFinalCopyY: "16",
+          mobileFinalCopyScale: "88"
         };
         const inputs = Object.fromEntries(
           Object.keys(defaults).map(id => [id, document.querySelector("#" + id)])
