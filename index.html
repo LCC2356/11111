@@ -911,10 +911,11 @@
     }
 
     .left-side-copy {
-      /* Right edge matches the original one-character “剩” position. */
-      left: calc(5.62% + 2.28479cqw);
+      /* Match the desktop right label's visual gap from the centred cards. */
+      left: 8.435%;
       transform: translate(-100%, -50%) scale(var(--launch-side-scale, 1));
       transform-origin: right center;
+      text-shadow: none;
     }
 
     .right-side-copy {
@@ -924,8 +925,8 @@
     }
 
     .scene.preview-mobile .left-side-copy {
-      /* Match the right label's card gap while keeping the flip group centred. */
-      left: 9.84%;
+      /* Optical correction: the final glyph needs 1px less visual whitespace. */
+      left: 10.12%;
       top: 48.1%;
       font-size: 20px;
       line-height: 20px;
