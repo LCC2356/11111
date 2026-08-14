@@ -253,7 +253,33 @@
     .group-card { grid-column: span 3; }
     .group-visibility { grid-column: span 5; }
     .group-presets { grid-column: 1 / -1; }
+    .group-mobile-layout { grid-column: span 3; }
     .advanced-panel { grid-column: 1 / -1; }
+
+    .mobile-layout-toolbar {
+      grid-column: 1 / -1;
+      justify-content: space-between;
+    }
+
+    .mobile-layout-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mobile-layout-actions button.is-active {
+      color: #101014;
+      background: #ffda00;
+      border-color: #ffda00;
+    }
+
+    .mobile-layout-output {
+      width: 100%;
+      min-height: 18px;
+      color: rgba(255,255,255,.62);
+      font-variant-numeric: tabular-nums;
+      word-break: break-all;
+    }
 
     .advanced-panel {
       overflow: hidden;
@@ -518,6 +544,12 @@
       --mobile-copy-transform: matrix(1.26, 0, 0, 1, 0, 18);
       --mobile-side-left-transform: matrix(1.57, 0, 0, 1.248, -12.2, 29.1);
       --mobile-side-right-transform: matrix(1.57, 0, 0, 1.248, 12.5, 28.5);
+      --layout-logo-x: var(--mobile-final-logo-x, 0px);
+      --layout-logo-y: var(--mobile-final-logo-y, 0px);
+      --layout-logo-scale: var(--mobile-final-logo-scale, 1);
+      --layout-copy-x: var(--mobile-final-copy-x, 0px);
+      --layout-copy-y: var(--mobile-final-copy-y, 0px);
+      --layout-copy-scale: var(--mobile-final-copy-scale, 1);
     }
 
     .scene.preview-mobile .flip-stage-slot {
@@ -559,12 +591,24 @@
       copy  ≈ 315 × 127 px at (18, 292)
       All values are relative to the 351 × 462 hero rendered in a 390 px scene.
     */
-    .scene.preview-mobile .hero-content.prelaunch-active {
-      --launch-logo-scale: 2.06;
-      --launch-logo-translate-y: 74px;
-      --launch-copy-scale: 1.08;
-      --launch-copy-translate-y: -64px;
+    .scene.preview-mobile .hero-content.prelaunch-active:not(.prelaunch-settle),
+    .scene.preview-mobile .hero-content.mobile-layout-start-preview {
+      --launch-logo-scale: var(--mobile-start-logo-scale, 2.06);
+      --launch-logo-translate-x: var(--mobile-start-logo-x, 0px);
+      --launch-logo-translate-y: var(--mobile-start-logo-y, 111px);
+      --launch-copy-scale: var(--mobile-start-copy-scale, 1.08);
+      --launch-copy-translate-x: var(--mobile-start-copy-x, 0px);
+      --launch-copy-translate-y: var(--mobile-start-copy-y, -64px);
       --launch-stage-translate-y: 7px;
+    }
+
+    .scene.preview-mobile .hero-content.prelaunch-active.prelaunch-settle {
+      --launch-logo-scale: 1;
+      --launch-logo-translate-x: 0px;
+      --launch-logo-translate-y: 0px;
+      --launch-copy-scale: 1;
+      --launch-copy-translate-x: 0px;
+      --launch-copy-translate-y: 0px;
     }
 
     /*
@@ -784,8 +828,13 @@
       transform-box: fill-box;
       transform-origin: center;
       transform:
+        translate3d(
+          calc(var(--layout-logo-x, 0px) + var(--launch-logo-translate-x, 0px)),
+          calc(var(--layout-logo-y, 0px) + var(--launch-logo-translate-y, 0px) + var(--launch-logo-appear-offset, 0px)),
+          0
+        )
         var(--mobile-logo-transform,)
-        translate3d(0, calc(var(--launch-logo-translate-y, 0px) + var(--launch-logo-appear-offset, 0px)), 0)
+        scale(var(--layout-logo-scale, 1))
         scale(var(--launch-logo-scale, 1));
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
@@ -798,8 +847,13 @@
       transform-box: fill-box;
       transform-origin: center;
       transform:
+        translate3d(
+          calc(var(--layout-copy-x, 0px) + var(--launch-copy-translate-x, 0px)),
+          calc(var(--layout-copy-y, 0px) + var(--launch-copy-translate-y, 0px) + var(--launch-copy-appear-offset, 0px)),
+          0
+        )
         var(--mobile-copy-transform,)
-        translate3d(0, calc(var(--launch-copy-translate-y, 0px) + var(--launch-copy-appear-offset, 0px)), 0)
+        scale(var(--layout-copy-scale, 1))
         scale(var(--launch-copy-scale, 1));
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
@@ -1330,6 +1384,88 @@
           <input id="launchShinyColor" type="color" value="#ffffff" />
         </label>
       </section>
+
+      <details class="advanced-panel" id="mobileLayoutControls" open>
+        <summary>手机版动画排版</summary>
+        <div class="advanced-body">
+          <section class="control-group mobile-layout-toolbar">
+            <span class="group-title">状态预览</span>
+            <div class="mobile-layout-actions">
+              <button id="previewMobileStartState" type="button" aria-pressed="false">动画开始</button>
+              <button id="previewMobileFinalState" class="is-active" type="button" aria-pressed="true">归位后</button>
+              <button id="copyMobileLayoutValues" type="button">复制手机版参数</button>
+              <button id="resetMobileLayoutValues" type="button">恢复默认</button>
+            </div>
+            <span id="mobileLayoutOutput" class="mobile-layout-output" role="status" aria-live="polite">
+              调整滑杆后会实时应用到手机版。
+            </span>
+          </section>
+
+          <section class="control-group group-mobile-layout">
+            <span class="group-title">开始 · Logo</span>
+            <label>X
+              <input id="mobileStartLogoX" type="range" min="-180" max="180" step="1" value="0" />
+              <span id="mobileStartLogoXText">0px</span>
+            </label>
+            <label>Y
+              <input id="mobileStartLogoY" type="range" min="-200" max="240" step="1" value="111" />
+              <span id="mobileStartLogoYText">111px</span>
+            </label>
+            <label>大小
+              <input id="mobileStartLogoScale" type="range" min="40" max="350" step="1" value="206" />
+              <span id="mobileStartLogoScaleText">206%</span>
+            </label>
+          </section>
+
+          <section class="control-group group-mobile-layout">
+            <span class="group-title">开始 · 文字组</span>
+            <label>X
+              <input id="mobileStartCopyX" type="range" min="-180" max="180" step="1" value="0" />
+              <span id="mobileStartCopyXText">0px</span>
+            </label>
+            <label>Y
+              <input id="mobileStartCopyY" type="range" min="-240" max="240" step="1" value="-64" />
+              <span id="mobileStartCopyYText">-64px</span>
+            </label>
+            <label>大小
+              <input id="mobileStartCopyScale" type="range" min="40" max="220" step="1" value="108" />
+              <span id="mobileStartCopyScaleText">108%</span>
+            </label>
+          </section>
+
+          <section class="control-group group-mobile-layout">
+            <span class="group-title">归位 · Logo</span>
+            <label>X
+              <input id="mobileFinalLogoX" type="range" min="-180" max="180" step="1" value="0" />
+              <span id="mobileFinalLogoXText">0px</span>
+            </label>
+            <label>Y
+              <input id="mobileFinalLogoY" type="range" min="-200" max="240" step="1" value="0" />
+              <span id="mobileFinalLogoYText">0px</span>
+            </label>
+            <label>大小
+              <input id="mobileFinalLogoScale" type="range" min="40" max="220" step="1" value="100" />
+              <span id="mobileFinalLogoScaleText">100%</span>
+            </label>
+          </section>
+
+          <section class="control-group group-mobile-layout">
+            <span class="group-title">归位 · 文字组</span>
+            <label>X
+              <input id="mobileFinalCopyX" type="range" min="-180" max="180" step="1" value="0" />
+              <span id="mobileFinalCopyXText">0px</span>
+            </label>
+            <label>Y
+              <input id="mobileFinalCopyY" type="range" min="-240" max="240" step="1" value="0" />
+              <span id="mobileFinalCopyYText">0px</span>
+            </label>
+            <label>大小
+              <input id="mobileFinalCopyScale" type="range" min="40" max="220" step="1" value="100" />
+              <span id="mobileFinalCopyScaleText">100%</span>
+            </label>
+          </section>
+        </div>
+      </details>
 
       <section class="control-group group-presets">
         <span class="group-title">预设</span>
@@ -2373,6 +2509,36 @@
         document.querySelector("#launchIntroSettle");
       const launchIntroSettleText =
         document.querySelector("#launchIntroSettleText");
+      const mobileLayoutDefaults = {
+        mobileStartLogoX: "0",
+        mobileStartLogoY: "111",
+        mobileStartLogoScale: "206",
+        mobileStartCopyX: "0",
+        mobileStartCopyY: "-64",
+        mobileStartCopyScale: "108",
+        mobileFinalLogoX: "0",
+        mobileFinalLogoY: "0",
+        mobileFinalLogoScale: "100",
+        mobileFinalCopyX: "0",
+        mobileFinalCopyY: "0",
+        mobileFinalCopyScale: "100"
+      };
+      const mobileLayoutInputs = Object.fromEntries(
+        Object.keys(mobileLayoutDefaults).map(id => [
+          id,
+          document.querySelector("#" + id)
+        ])
+      );
+      const previewMobileStartStateButton =
+        document.querySelector("#previewMobileStartState");
+      const previewMobileFinalStateButton =
+        document.querySelector("#previewMobileFinalState");
+      const copyMobileLayoutValuesButton =
+        document.querySelector("#copyMobileLayoutValues");
+      const resetMobileLayoutValuesButton =
+        document.querySelector("#resetMobileLayoutValues");
+      const mobileLayoutOutput =
+        document.querySelector("#mobileLayoutOutput");
       const launchShinyEnabledInput =
         document.querySelector("#launchShinyEnabled");
       const launchShinySpeedInput =
@@ -2507,6 +2673,7 @@
         launchIntroAppear: "0.4",
         launchIntroHold: "1.55",
         launchIntroSettle: "0.65",
+        mobileLayout: { ...mobileLayoutDefaults },
         launchShinyEnabled: true,
         launchShinySpeed: "1.5",
         launchShinyDelay: "1.45",
@@ -2587,7 +2754,8 @@
           "prelaunch-visible",
           "prelaunch-settle",
           "prelaunch-reset",
-          "prelaunch-raster-motion"
+          "prelaunch-raster-motion",
+          "mobile-layout-start-preview"
         );
         heroContent.style.removeProperty("--launch-appear-duration");
         heroContent.style.removeProperty("--launch-motion-duration");
@@ -3026,6 +3194,73 @@
         ];
       }
 
+      function captureMobileLayoutSettings() {
+        return Object.fromEntries(
+          Object.entries(mobileLayoutInputs).map(([id, input]) => [
+            id,
+            input.value
+          ])
+        );
+      }
+
+      function applyMobileLayoutControls() {
+        const value = id => Number(mobileLayoutInputs[id].value) || 0;
+        const cssValues = {
+          "--mobile-start-logo-x": value("mobileStartLogoX") + "px",
+          "--mobile-start-logo-y": value("mobileStartLogoY") + "px",
+          "--mobile-start-logo-scale": value("mobileStartLogoScale") / 100,
+          "--mobile-start-copy-x": value("mobileStartCopyX") + "px",
+          "--mobile-start-copy-y": value("mobileStartCopyY") + "px",
+          "--mobile-start-copy-scale": value("mobileStartCopyScale") / 100,
+          "--mobile-final-logo-x": value("mobileFinalLogoX") + "px",
+          "--mobile-final-logo-y": value("mobileFinalLogoY") + "px",
+          "--mobile-final-logo-scale": value("mobileFinalLogoScale") / 100,
+          "--mobile-final-copy-x": value("mobileFinalCopyX") + "px",
+          "--mobile-final-copy-y": value("mobileFinalCopyY") + "px",
+          "--mobile-final-copy-scale": value("mobileFinalCopyScale") / 100
+        };
+        Object.entries(cssValues).forEach(([name, current]) => {
+          heroContent.style.setProperty(name, String(current));
+        });
+
+        Object.entries(mobileLayoutInputs).forEach(([id, input]) => {
+          const output = document.querySelector("#" + id + "Text");
+          if (!output) return;
+          output.textContent = id.endsWith("Scale")
+            ? input.value + "%"
+            : input.value + "px";
+        });
+      }
+
+      function applyMobileLayoutSettings(settings = mobileLayoutDefaults) {
+        Object.entries(mobileLayoutInputs).forEach(([id, input]) => {
+          input.value = String(settings[id] ?? mobileLayoutDefaults[id]);
+        });
+        applyMobileLayoutControls();
+      }
+
+      function setMobileLayoutPreviewState(state) {
+        const showStart = state === "start";
+        if (!scene.classList.contains("preview-mobile")) {
+          document.querySelector("#previewMobile")?.click();
+        }
+        cancelLaunchIntroSequence();
+        heroContent.classList.toggle(
+          "mobile-layout-start-preview",
+          showStart
+        );
+        previewMobileStartStateButton.classList.toggle("is-active", showStart);
+        previewMobileFinalStateButton.classList.toggle("is-active", !showStart);
+        previewMobileStartStateButton.setAttribute(
+          "aria-pressed",
+          String(showStart)
+        );
+        previewMobileFinalStateButton.setAttribute(
+          "aria-pressed",
+          String(!showStart)
+        );
+      }
+
       function updateControlTexts() {
         syncStartHold(startHoldNumberInput);
         if (Number(finalSpeedInput.value) < Number(initialSpeedInput.value)) {
@@ -3054,6 +3289,7 @@
           Number(launchShinyDelayInput.value).toFixed(2) + "s";
         launchShinySpreadText.textContent =
           Math.round(Number(launchShinySpreadInput.value)) + "°";
+        applyMobileLayoutControls();
         updatePrelaunchShinyStyle();
         document.querySelector("#bgNoiseText").textContent =
           Math.round(Number(backgroundInputs.bgNoise.value) * 100) + "%";
@@ -3114,6 +3350,7 @@
           launchIntroAppear: launchIntroAppearInput.value,
           launchIntroHold: launchIntroHoldInput.value,
           launchIntroSettle: launchIntroSettleInput.value,
+          mobileLayout: captureMobileLayoutSettings(),
           launchShinyEnabled: launchShinyEnabledInput.checked,
           launchShinySpeed: launchShinySpeedInput.value,
           launchShinyDelay: launchShinyDelayInput.value,
@@ -3169,6 +3406,9 @@
           settings.launchIntroHold ?? DEFAULT_PRESET.launchIntroHold;
         launchIntroSettleInput.value =
           settings.launchIntroSettle ?? DEFAULT_PRESET.launchIntroSettle;
+        applyMobileLayoutSettings(
+          settings.mobileLayout ?? DEFAULT_PRESET.mobileLayout
+        );
         launchShinyEnabledInput.checked =
           settings.launchShinyEnabled ?? DEFAULT_PRESET.launchShinyEnabled;
         launchShinySpeedInput.value =
@@ -3587,6 +3827,40 @@
         input.addEventListener("input", updateControlTexts);
         input.addEventListener("change", updateControlTexts);
       });
+
+      Object.values(mobileLayoutInputs).forEach(input => {
+        input.addEventListener("input", () => {
+          if (!scene.classList.contains("preview-mobile")) {
+            document.querySelector("#previewMobile")?.click();
+          }
+          applyMobileLayoutControls();
+        });
+      });
+
+      previewMobileStartStateButton.addEventListener("click", () => {
+        setMobileLayoutPreviewState("start");
+      });
+      previewMobileFinalStateButton.addEventListener("click", () => {
+        setMobileLayoutPreviewState("final");
+      });
+      resetMobileLayoutValuesButton.addEventListener("click", () => {
+        applyMobileLayoutSettings(mobileLayoutDefaults);
+        setMobileLayoutPreviewState("final");
+        mobileLayoutOutput.textContent = "已恢复手机版默认参数。";
+      });
+      copyMobileLayoutValuesButton.addEventListener("click", async () => {
+        const payload = {
+          mobileLayout: captureMobileLayoutSettings()
+        };
+        const json = JSON.stringify(payload, null, 2);
+        try {
+          await navigator.clipboard.writeText(json);
+          mobileLayoutOutput.textContent = "手机版参数已复制，可以直接发给我。";
+        } catch {
+          mobileLayoutOutput.textContent = json;
+        }
+      });
+      window.__mobileLayoutControlsReady = true;
 
       presetSelect.addEventListener("change", selectPreset);
       savePresetButton.addEventListener("click", saveCurrentPreset);
@@ -4262,6 +4536,111 @@
       narrowViewport.addEventListener?.("change", event => {
         if (!userSelected) setPreviewMode(event.matches ? "mobile" : "desktop");
       });
+    })();
+  </script>
+  <script id="mobile-layout-controls-fallback">
+    (() => {
+      "use strict";
+      window.setTimeout(() => {
+        if (window.__mobileLayoutControlsReady) return;
+
+        const scene = document.querySelector(".scene");
+        const heroContent = document.querySelector(".hero-content");
+        const startButton = document.querySelector("#previewMobileStartState");
+        const finalButton = document.querySelector("#previewMobileFinalState");
+        const copyButton = document.querySelector("#copyMobileLayoutValues");
+        const resetButton = document.querySelector("#resetMobileLayoutValues");
+        const output = document.querySelector("#mobileLayoutOutput");
+        const defaults = {
+          mobileStartLogoX: "0",
+          mobileStartLogoY: "111",
+          mobileStartLogoScale: "206",
+          mobileStartCopyX: "0",
+          mobileStartCopyY: "-64",
+          mobileStartCopyScale: "108",
+          mobileFinalLogoX: "0",
+          mobileFinalLogoY: "0",
+          mobileFinalLogoScale: "100",
+          mobileFinalCopyX: "0",
+          mobileFinalCopyY: "0",
+          mobileFinalCopyScale: "100"
+        };
+        const inputs = Object.fromEntries(
+          Object.keys(defaults).map(id => [id, document.querySelector("#" + id)])
+        );
+        if (!scene || !heroContent || !startButton || !finalButton) return;
+
+        const values = () => Object.fromEntries(
+          Object.entries(inputs).map(([id, input]) => [id, input.value])
+        );
+        const apply = () => {
+          const number = id => Number(inputs[id].value) || 0;
+          const css = {
+            "--mobile-start-logo-x": number("mobileStartLogoX") + "px",
+            "--mobile-start-logo-y": number("mobileStartLogoY") + "px",
+            "--mobile-start-logo-scale": number("mobileStartLogoScale") / 100,
+            "--mobile-start-copy-x": number("mobileStartCopyX") + "px",
+            "--mobile-start-copy-y": number("mobileStartCopyY") + "px",
+            "--mobile-start-copy-scale": number("mobileStartCopyScale") / 100,
+            "--mobile-final-logo-x": number("mobileFinalLogoX") + "px",
+            "--mobile-final-logo-y": number("mobileFinalLogoY") + "px",
+            "--mobile-final-logo-scale": number("mobileFinalLogoScale") / 100,
+            "--mobile-final-copy-x": number("mobileFinalCopyX") + "px",
+            "--mobile-final-copy-y": number("mobileFinalCopyY") + "px",
+            "--mobile-final-copy-scale": number("mobileFinalCopyScale") / 100
+          };
+          Object.entries(css).forEach(([name, value]) => {
+            heroContent.style.setProperty(name, String(value));
+          });
+          Object.entries(inputs).forEach(([id, input]) => {
+            const text = document.querySelector("#" + id + "Text");
+            if (text) text.textContent = id.endsWith("Scale")
+              ? input.value + "%"
+              : input.value + "px";
+          });
+        };
+        const show = state => {
+          const start = state === "start";
+          if (!scene.classList.contains("preview-mobile")) {
+            document.querySelector("#previewMobile")?.click();
+          }
+          heroContent.classList.toggle("mobile-layout-start-preview", start);
+          startButton.classList.toggle("is-active", start);
+          finalButton.classList.toggle("is-active", !start);
+          startButton.setAttribute("aria-pressed", String(start));
+          finalButton.setAttribute("aria-pressed", String(!start));
+        };
+
+        Object.values(inputs).forEach(input => {
+          input.addEventListener("input", () => {
+            if (!scene.classList.contains("preview-mobile")) {
+              document.querySelector("#previewMobile")?.click();
+            }
+            apply();
+          });
+        });
+        startButton.addEventListener("click", () => show("start"));
+        finalButton.addEventListener("click", () => show("final"));
+        resetButton.addEventListener("click", () => {
+          Object.entries(inputs).forEach(([id, input]) => {
+            input.value = defaults[id];
+          });
+          apply();
+          show("final");
+          output.textContent = "已恢复手机版默认参数。";
+        });
+        copyButton.addEventListener("click", async () => {
+          const json = JSON.stringify({ mobileLayout: values() }, null, 2);
+          try {
+            await navigator.clipboard.writeText(json);
+            output.textContent = "手机版参数已复制，可以直接发给我。";
+          } catch {
+            output.textContent = json;
+          }
+        });
+        apply();
+        window.__mobileLayoutControlsReady = true;
+      }, 1800);
     })();
   </script>
 </body>
