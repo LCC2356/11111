@@ -513,7 +513,9 @@
       aspect-ratio: auto;
       top: calc(50% - 4.60199cqw); /* 18.5 / 402 above optical centre */
       --mobile-logo-transform: matrix(1.896, 0, 0, 1.498, 0, 0);
-      --mobile-copy-transform: matrix(1.371, 0, 0, .94, -1.25, 13.28);
+      /* Cancel the mobile SVG's non-uniform x/y stretch so the three copy
+         lines keep their original glyph proportions. */
+      --mobile-copy-transform: matrix(1.26, 0, 0, 1, 0, 18);
       --mobile-side-left-transform: matrix(1.57, 0, 0, 1.248, -12.2, 29.1);
       --mobile-side-right-transform: matrix(1.57, 0, 0, 1.248, 12.5, 28.5);
     }
