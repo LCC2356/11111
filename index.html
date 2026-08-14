@@ -912,7 +912,7 @@
 
     .left-side-copy {
       /* Match the desktop right label's visual gap from the centred cards. */
-      left: 8.435%;
+      left: 8.70%;
       transform: translate(-100%, -50%) scale(var(--launch-side-scale, 1));
       transform-origin: right center;
       text-shadow: none;
@@ -1526,27 +1526,27 @@
           <input id="launchIntroEnabled" type="checkbox" / checked>
         </label>
         <label title="居中的大 Logo 与文字组从无到有的出现速度">出现速度
-          <input id="launchIntroAppear" type="range" min="0.1" max="2" step="0.05" value="0.4" />
-          <span id="launchIntroAppearText">0.45s</span>
+          <input id="launchIntroAppear" type="range" min="0.1" max="2" step="0.05" value="0.2" />
+          <span id="launchIntroAppearText">0.20s</span>
         </label>
         <label title="居中的大 Logo 与文字组保持不动的时间">停留
-          <input id="launchIntroHold" type="range" min="0" max="3" step="0.05" value="1.55" />
-          <span id="launchIntroHoldText">1.00s</span>
+          <input id="launchIntroHold" type="range" min="0" max="3" step="0.05" value="1.2" />
+          <span id="launchIntroHoldText">1.20s</span>
         </label>
         <label title="Logo 缩回顶部、下方文字组回到标准位置，同时中间翻页出现的速度">回位速度
-          <input id="launchIntroSettle" type="range" min="0.1" max="2.5" step="0.05" value="0.65" />
-          <span id="launchIntroSettleText">0.80s</span>
+          <input id="launchIntroSettle" type="range" min="0.1" max="2.5" step="0.05" value="0.55" />
+          <span id="launchIntroSettleText">0.55s</span>
         </label>
         <label class="switch-label" title="使用 React Bits ShinyText 的渐变移动逻辑，只叠加在 Logo 与下方文字轮廓中">ShinyText
           <input id="launchShinyEnabled" type="checkbox" / checked>
         </label>
         <label title="对应 ShinyText 的 speed：一次高光移动所需的秒数">高光速度
-          <input id="launchShinySpeed" type="range" min="0.2" max="4" step="0.05" value="1.5" />
-          <span id="launchShinySpeedText">0.80s</span>
+          <input id="launchShinySpeed" type="range" min="0.2" max="4" step="0.05" value="1.25" />
+          <span id="launchShinySpeedText">1.25s</span>
         </label>
         <label title="对应 ShinyText 的 delay：每次高光移动结束后的停顿时间">循环间隔
           <input id="launchShinyDelay" type="range" min="0" max="3" step="0.05" value="1.45" />
-          <span id="launchShinyDelayText">0.20s</span>
+          <span id="launchShinyDelayText">1.45s</span>
         </label>
         <label title="对应 ShinyText 的 spread：控制线性渐变角度">渐变角度
           <input id="launchShinySpread" type="range" min="0" max="180" step="1" value="120" />
@@ -1694,25 +1694,25 @@
               秒
             </label>
             <label>初始速度
-              <input id="initialSpeed" type="range" min="80" max="700" step="10" value="100" />
-              <span id="initialSpeedText">0.30s</span>
+              <input id="initialSpeed" type="range" min="80" max="700" step="10" value="80" />
+              <span id="initialSpeedText">0.08s</span>
             </label>
             <label>最终速度
               <input id="finalSpeed" type="range" min="150" max="1400" step="10" value="1400" />
-              <span id="finalSpeedText">0.65s</span>
+              <span id="finalSpeedText">1.40s</span>
             </label>
             <label>剩余
-              <input id="slowdownStart" type="range" min="2" max="15" step="1" value="7" />
-              <span id="slowdownStartText">5 张</span>
+              <input id="slowdownStart" type="range" min="2" max="15" step="1" value="4" />
+              <span id="slowdownStartText">4 张</span>
               开始减慢
             </label>
             <label title="数值越高，减速越集中在最后几张">减速幅度
               <input id="slowdownAmount" type="range" min="0" max="100" step="5" value="100" />
-              <span id="slowdownAmountText">70%</span>
+              <span id="slowdownAmountText">100%</span>
             </label>
             <label>动态模糊
               <input id="motionBlur" type="range" min="0" max="300" step="5" value="100" />
-              <span id="motionBlurText">45%</span>
+              <span id="motionBlurText">100%</span>
             </label>
           </section>
         </div>
@@ -2844,19 +2844,19 @@
         glassTopEnd: "#000000",
         glassBottomStart: "#ffffff",
         glassBottomEnd: "#b2c6ff",
-        initialSpeed: "100",
+        initialSpeed: "80",
         finalSpeed: "1400",
-        slowdownStart: "7",
+        slowdownStart: "4",
         slowdownAmount: "100",
         motionBlur: "100",
         startHold: "0.2",
         launchIntroEnabled: true,
-        launchIntroAppear: "0.4",
-        launchIntroHold: "1.55",
-        launchIntroSettle: "0.65",
+        launchIntroAppear: "0.2",
+        launchIntroHold: "1.2",
+        launchIntroSettle: "0.55",
         mobileLayout: { ...mobileLayoutDefaults },
         launchShinyEnabled: true,
-        launchShinySpeed: "1.5",
+        launchShinySpeed: "1.25",
         launchShinyDelay: "1.45",
         launchShinySpread: "120",
         launchShinyDirection: "right",
