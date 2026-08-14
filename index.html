@@ -739,6 +739,14 @@
 
     body.mobile-preview-active #mobileLayoutControls .control-group {
       align-items: stretch;
+      grid-column: 1 / -1;
+      min-width: 0;
+    }
+
+    body.mobile-preview-active #mobileLayoutControls .advanced-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
     }
 
     body.mobile-preview-active #mobileLayoutControls label {
@@ -875,14 +883,11 @@
 
     .figma-decoration .reveal-side-left { display: none; }
 
-    .left-side-copy {
+    .left-side-copy,
+    .right-side-copy {
       position: absolute;
       z-index: 3;
-      /* Right edge matches the original one-character “剩” position. */
-      left: calc(5.62% + 2.28479cqw);
       top: 43.25%;
-      transform: translate(-100%, -50%) scale(var(--launch-side-scale, 1));
-      transform-origin: right center;
       opacity: calc(
         var(--intro-overlay-opacity, 1) *
         var(--side-layer-opacity, 1) *
@@ -905,11 +910,37 @@
       pointer-events: none;
     }
 
+    .left-side-copy {
+      /* Right edge matches the original one-character “剩” position. */
+      left: calc(5.62% + 2.28479cqw);
+      transform: translate(-100%, -50%) scale(var(--launch-side-scale, 1));
+      transform-origin: right center;
+    }
+
+    .right-side-copy {
+      display: none;
+      transform: translate(0, -50%) scale(var(--launch-side-scale, 1));
+      transform-origin: left center;
+    }
+
     .scene.preview-mobile .left-side-copy {
       /* Preserve the old “剩” right edge after replacing it with “还有”. */
       left: calc(4.1% + 2.7cqw);
       top: 48.1%;
-      font-size: 5.4cqw;
+      font-size: 20px;
+      line-height: 20px;
+    }
+
+    .scene.preview-mobile .figma-decoration .reveal-side-right {
+      display: none;
+    }
+
+    .scene.preview-mobile .right-side-copy {
+      display: block;
+      left: 90.16%;
+      top: 48.1%;
+      font-size: 20px;
+      line-height: 20px;
     }
 
     .figma-decoration .reveal-copy {
@@ -1014,6 +1045,7 @@
     .hero-content.prelaunch-reset .figma-decoration .reveal-copy,
     .hero-content.prelaunch-reset .figma-decoration .reveal-side,
     .hero-content.prelaunch-reset .left-side-copy,
+    .hero-content.prelaunch-reset .right-side-copy,
     .hero-content.prelaunch-reset .flip-stage-slot,
     .scene.prelaunch-reset .frame-decoration {
       transition: none !important;
@@ -1121,6 +1153,7 @@
         </div>
 
         <span class="left-side-copy" aria-label="还有">还有</span>
+        <span class="right-side-copy" aria-label="天">天</span>
 
         <svg class="figma-decoration" role="img" aria-label="30周年倒计时与发售信息" xmlns="http://www.w3.org/2000/svg" width="569" height="594" viewBox="0 0 569 594" fill="none">
         <g class="reveal-logo reveal-logo-group">
