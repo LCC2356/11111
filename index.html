@@ -552,11 +552,44 @@
       backdrop-filter: blur(2.7px);
     }
 
-    /* Keep the opening logo/copy separation proportional on the smaller artboard. */
+    /*
+      Mobile pre-launch pose.
+      These values are deliberately separate from the settled Figma pose above:
+      logo  ≈ 220 × 162 px at (66, 111)
+      copy  ≈ 315 × 127 px at (18, 292)
+      All values are relative to the 351 × 462 hero rendered in a 390 px scene.
+    */
     .scene.preview-mobile .hero-content.prelaunch-active {
-      --launch-logo-translate-y: 86px;
-      --launch-copy-translate-y: -74px;
+      --launch-logo-scale: 2.06;
+      --launch-logo-translate-y: 74px;
+      --launch-copy-scale: 1.08;
+      --launch-copy-translate-y: -64px;
       --launch-stage-translate-y: 7px;
+    }
+
+    /*
+      The raster snapshots are generated from the desktop 569 × 594 coordinate
+      system. On mobile the SVG uses an intentionally stretched viewport, so
+      swapping to those snapshots creates a one-frame jump. Keep the same SVG
+      elements alive for the complete mobile transition.
+    */
+    .scene.preview-mobile .hero-content.prelaunch-raster-motion .prelaunch-raster-layer {
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .scene.preview-mobile .hero-content.prelaunch-raster-motion .figma-decoration .reveal-logo {
+      opacity: calc(
+        var(--intro-overlay-opacity, 1) *
+        var(--launch-logo-opacity, 1)
+      ) !important;
+    }
+
+    .scene.preview-mobile .hero-content.prelaunch-raster-motion .figma-decoration .reveal-copy {
+      opacity: calc(
+        var(--intro-overlay-opacity, 1) *
+        var(--launch-copy-opacity, 1)
+      ) !important;
     }
 
     @media (max-width: 560px) {
@@ -2570,26 +2603,15 @@
 
       function startPrelaunchFade(durationMs) {
         cancelPrelaunchFade();
-        heroContent.classList.add("prelaunch-visible");
         const duration = Math.max(100, Number(durationMs) || 420);
-        const targets = heroContent.querySelectorAll(
-          ".figma-decoration .reveal-logo, .figma-decoration .reveal-copy"
-        );
-        targets.forEach(target => {
-          if (typeof target.animate !== "function") return;
-          const animation = target.animate(
-            [
-              { opacity: 0 },
-              { opacity: 1 }
-            ],
-            {
-              duration,
-              easing: "cubic-bezier(.22, 1, .36, 1)",
-              fill: "both"
-            }
-          );
-          prelaunchFadeAnimations.push(animation);
-        });
+        heroContent.style.setProperty("--launch-appear-duration", duration + "ms");
+        /*
+          Opacity now uses the same CSS state machine as position and scale.
+          Cancelling a second fill:'both' animation during settle caused the
+          brief mobile Safari flash.
+        */
+        void heroContent.offsetWidth;
+        heroContent.classList.add("prelaunch-visible");
       }
 
       function cancelPrelaunchShiny() {
@@ -2797,7 +2819,11 @@
             motion. Force one style pass at the centered pose, then change the
             CSS variables so the browser only composites two GPU textures.
           */
-          if (prelaunchRasterReady && prelaunchRasterLayer) {
+          if (
+            !scene.classList.contains("preview-mobile") &&
+            prelaunchRasterReady &&
+            prelaunchRasterLayer
+          ) {
             heroContent.classList.add("prelaunch-raster-motion");
             void prelaunchRasterLayer.offsetWidth;
           }
